@@ -2,28 +2,27 @@ package chip8
 
 import "fmt"
 
-type Cpu struct {
-	I           uint16
-	Pc          uint16
-	Sp          byte
-	Dt          byte
-	St          byte
-	ProgramSize int
-	Registers   [16]byte
-	Stack       [16]uint16
+type cpu struct {
+	i         uint16
+	pc        uint16
+	sp        byte
+	dt        byte
+	st        byte
+	registers [16]byte
+	stack     [16]uint16
 }
 
-func NewCpu() *Cpu {
-	return &Cpu{
-		Pc: ProgramStartAddress,
+func newCPU() *cpu {
+	return &cpu{
+		pc: ProgramStartAddress,
 	}
 }
 
-func (c *Cpu) SetVf(value byte) {
-	c.Registers[0xF] = value
+func (c *cpu) SetVF(value byte) {
+	c.registers[0xF] = value
 }
 
-func (c *Cpu) Execute(opcode uint16, memory *Memory) {
+func (c *cpu) execute(opcode uint16, memory *memory) {
 	x := (opcode & 0x0F00) >> 8
 	y := (opcode & 0x00F0) >> 4
 	d := opcode & 0x000F
@@ -116,6 +115,6 @@ func (c *Cpu) Execute(opcode uint16, memory *Memory) {
 	}
 }
 
-func (c *Cpu) Sne() {
-	c.Pc += 2
+func (c *cpu) sne() {
+	c.pc += 2
 }

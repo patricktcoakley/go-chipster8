@@ -2,31 +2,33 @@ package main
 
 import (
 	"flag"
-	"github.com/hajimehoshi/ebiten/v2"
-	"go-chipster8/internal/chip8"
 	"log"
-	"os"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var (
-	romPath = flag.String("romPath", "", "Which rom to run")
+	screenWidth  = 1200
+	screenHeight = 600
+
+	widthFlag   = flag.Int("width", screenWidth, "Width of the screen")
+	romPathFlag = flag.String("romPath", "", "Which rom to run")
+	palleteFlag = flag.String("pallete", "black", "Pallete to use")
 )
 
 func main() {
 	flag.Parse()
 
-	c := chip8.NewChip8()
-	f, err := os.ReadFile(*romPath)
-	if err != nil {
-		panic(err)
-	}
-	c.LoadRom(f)
+	screenWidth = *widthFlag
+	screenHeight = screenWidth / 2
 
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Chipster8")
-	if err := ebiten.RunGame(&Game{
-		chip8: c,
-	}); err != nil {
+
+	g := NewGame(*romPathFlag, *palleteFlag)
+
+	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
 }

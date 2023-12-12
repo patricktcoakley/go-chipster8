@@ -2,210 +2,211 @@ package chip8
 
 import "math/rand"
 
-func clearScreen(memory *Memory) {
-	for i := range memory.Video {
-		memory.Video[i] = 0x0
+func clearScreen(memory *memory) {
+	for i := range memory.video {
+		memory.video[i] = 0x0
 	}
 }
 
-func returnFromSubroutine(cpu *Cpu) {
-	cpu.Sp--
-	cpu.Pc = cpu.Stack[cpu.Sp]
+func returnFromSubroutine(cpu *cpu) {
+	cpu.sp--
+	cpu.pc = cpu.stack[cpu.sp]
 }
 
-func jump(cpu *Cpu, nnn uint16) {
-	cpu.Pc = nnn
+func jump(cpu *cpu, nnn uint16) {
+	cpu.pc = nnn
 }
 
-func call(cpu *Cpu, nnn uint16) {
-	cpu.Stack[cpu.Sp] = cpu.Pc
-	cpu.Sp++
-	cpu.Pc = nnn
+func call(cpu *cpu, nnn uint16) {
+	cpu.stack[cpu.sp] = cpu.pc
+	cpu.sp++
+	cpu.pc = nnn
 }
 
-func skipEqual(cpu *Cpu, x uint16, nn uint16) {
-	if cpu.Registers[x] == byte(nn) {
-		cpu.Sne()
+func skipEqual(cpu *cpu, x uint16, nn uint16) {
+	if cpu.registers[x] == byte(nn) {
+		cpu.sne()
 	}
 }
 
-func skipNotEqual(cpu *Cpu, x uint16, nn uint16) {
-	if cpu.Registers[x] != byte(nn) {
-		cpu.Sne()
+func skipNotEqual(cpu *cpu, x uint16, nn uint16) {
+	if cpu.registers[x] != byte(nn) {
+		cpu.sne()
 	}
 }
 
-func registersSkipEqual(cpu *Cpu, x uint16, y uint16) {
-	if cpu.Registers[x] == cpu.Registers[y] {
-		cpu.Sne()
+func registersSkipEqual(cpu *cpu, x uint16, y uint16) {
+	if cpu.registers[x] == cpu.registers[y] {
+		cpu.sne()
 	}
 }
 
-func registerSet(cpu *Cpu, x uint16, nn uint16) {
-	cpu.Registers[x] = byte(nn)
+func registerSet(cpu *cpu, x uint16, nn uint16) {
+	cpu.registers[x] = byte(nn)
 }
 
-func registerAdd(cpu *Cpu, x uint16, nn uint16) {
-	cpu.Registers[x] += byte(nn)
+func registerAdd(cpu *cpu, x uint16, nn uint16) {
+	cpu.registers[x] += byte(nn)
 }
 
-func registersSet(cpu *Cpu, x uint16, y uint16) {
-	cpu.Registers[x] = cpu.Registers[y]
+func registersSet(cpu *cpu, x uint16, y uint16) {
+	cpu.registers[x] = cpu.registers[y]
 }
 
-func registerOr(cpu *Cpu, x uint16, y uint16) {
-	cpu.Registers[x] |= cpu.Registers[y]
+func registerOr(cpu *cpu, x uint16, y uint16) {
+	cpu.registers[x] |= cpu.registers[y]
 }
 
-func registerAnd(cpu *Cpu, x uint16, y uint16) {
-	cpu.Registers[x] &= cpu.Registers[y]
+func registerAnd(cpu *cpu, x uint16, y uint16) {
+	cpu.registers[x] &= cpu.registers[y]
 }
 
-func registerXor(cpu *Cpu, x uint16, y uint16) {
-	cpu.Registers[x] ^= cpu.Registers[y]
+func registerXor(cpu *cpu, x uint16, y uint16) {
+	cpu.registers[x] ^= cpu.registers[y]
 }
 
-func registersAdd(cpu *Cpu, x uint16, y uint16) {
-	result := uint16(cpu.Registers[x]) + uint16(cpu.Registers[y])
-	cpu.Registers[x] = byte(result)
+func registersAdd(cpu *cpu, x uint16, y uint16) {
+	result := uint16(cpu.registers[x]) + uint16(cpu.registers[y])
+	cpu.registers[x] = byte(result)
 	if result > 0xFF {
-		cpu.SetVf(1)
+		cpu.SetVF(1)
 	} else {
-		cpu.SetVf(0)
+		cpu.SetVF(0)
 	}
 }
 
-func registersSub(cpu *Cpu, x uint16, y uint16) {
+func registersSub(cpu *cpu, x uint16, y uint16) {
 	var updatedVf byte
-	if cpu.Registers[x] >= cpu.Registers[y] {
+	if cpu.registers[x] >= cpu.registers[y] {
 		updatedVf = 1
 	} else {
 		updatedVf = 0
 	}
-	cpu.Registers[x] -= cpu.Registers[y]
-	cpu.SetVf(updatedVf)
+	cpu.registers[x] -= cpu.registers[y]
+	cpu.SetVF(updatedVf)
 }
 
-func shiftRight(cpu *Cpu, x uint16) {
-	updatedVf := cpu.Registers[x] & 0x1
-	cpu.Registers[x] >>= 1
-	cpu.SetVf(updatedVf)
+func shiftRight(cpu *cpu, x uint16) {
+	updatedVf := cpu.registers[x] & 0x1
+	cpu.registers[x] >>= 1
+	cpu.SetVF(updatedVf)
 }
 
-func registersSubN(cpu *Cpu, x uint16, y uint16) {
+func registersSubN(cpu *cpu, x uint16, y uint16) {
 	var updatedVf byte
-	if cpu.Registers[x] <= cpu.Registers[y] {
+	if cpu.registers[x] <= cpu.registers[y] {
 		updatedVf = 1
 	} else {
 		updatedVf = 0
 	}
-	cpu.Registers[x] = cpu.Registers[y] - cpu.Registers[x]
-	cpu.SetVf(updatedVf)
+	cpu.registers[x] = cpu.registers[y] - cpu.registers[x]
+	cpu.SetVF(updatedVf)
 }
 
-func shiftLeft(cpu *Cpu, x uint16) {
-	updatedVf := (cpu.Registers[x] & 0x80) >> 7
-	cpu.Registers[x] <<= 1
-	cpu.SetVf(updatedVf)
+func shiftLeft(cpu *cpu, x uint16) {
+	updatedVf := (cpu.registers[x] & 0x80) >> 7
+	cpu.registers[x] <<= 1
+	cpu.SetVF(updatedVf)
 }
 
-func registersSkipNotEqual(cpu *Cpu, x uint16, y uint16) {
-	if cpu.Registers[x] != cpu.Registers[y] {
-		cpu.Sne()
+func registersSkipNotEqual(cpu *cpu, x uint16, y uint16) {
+	if cpu.registers[x] != cpu.registers[y] {
+		cpu.sne()
 	}
 }
 
-func iSet(cpu *Cpu, nnn uint16) {
-	cpu.I = nnn
+func iSet(cpu *cpu, nnn uint16) {
+	cpu.i = nnn
 }
 
-func jumpV0(cpu *Cpu, nnn uint16) {
-	cpu.Pc = nnn + uint16(cpu.Registers[0])
+func jumpV0(cpu *cpu, nnn uint16) {
+	cpu.pc = nnn + uint16(cpu.registers[0])
 }
 
-func randomByte(cpu *Cpu, x uint16, nn uint16) {
-	cpu.Registers[x] = byte(rand.Int()%0xFF) & byte(nn)
+func randomByte(cpu *cpu, x uint16, nn uint16) {
+	cpu.registers[x] = byte(rand.Int()%0xFF) & byte(nn)
 }
 
-func draw(cpu *Cpu, x uint16, y uint16, d uint16, memory *Memory) {
+func draw(cpu *cpu, x uint16, y uint16, d uint16, memory *memory) {
 	var collision byte
 	for displayY := uint16(0); displayY < d; displayY++ {
-		pixel := memory.Ram[cpu.I+displayY]
+		pixel := memory.ram[cpu.i+displayY]
 
 		for displayX := uint16(0); displayX < 8; displayX++ {
 			if pixel&(0x80>>displayX) != 0 {
-				xPos := (uint16(cpu.Registers[x]) + displayX) % VideoWidth
-				yPos := (uint16(cpu.Registers[y]) + displayY) % VideoHeight
+				xPos := (uint16(cpu.registers[x]) + displayX) % VideoWidth
+				yPos := (uint16(cpu.registers[y]) + displayY) % VideoHeight
 				pixelPos := yPos*VideoWidth + xPos
-				if memory.Video[pixelPos] == 0x1 {
+
+				if memory.video[pixelPos] == 0x1 {
 					collision = 1
 				}
-				memory.Video[pixelPos] ^= 0x1
+				memory.video[pixelPos] ^= 0x1
 			}
 		}
 	}
-	cpu.SetVf(collision)
+	cpu.SetVF(collision)
 }
 
-func keySkip(cpu *Cpu, x uint16, memory *Memory) {
-	if memory.Keypad[cpu.Registers[x]] {
-		cpu.Sne()
+func keySkip(cpu *cpu, x uint16, memory *memory) {
+	if memory.keypad[cpu.registers[x]] {
+		cpu.sne()
 	}
 }
 
-func keySkipNot(cpu *Cpu, x uint16, memory *Memory) {
-	if !memory.Keypad[cpu.Registers[x]] {
-		cpu.Sne()
+func keySkipNot(cpu *cpu, x uint16, memory *memory) {
+	if !memory.keypad[cpu.registers[x]] {
+		cpu.sne()
 	}
 }
 
-func registerSetDelay(cpu *Cpu, x uint16) {
-	cpu.Registers[x] = cpu.Dt
+func registerSetDelay(cpu *cpu, x uint16) {
+	cpu.registers[x] = cpu.dt
 }
 
-func keySet(cpu *Cpu, memory *Memory, x uint16) {
-	for i, pressed := range memory.Keypad {
+func keySet(cpu *cpu, memory *memory, x uint16) {
+	for i, pressed := range memory.keypad {
 		if pressed {
-			cpu.Registers[x] = byte(i)
+			cpu.registers[x] = byte(i)
 			return
 		}
 	}
-	cpu.Pc -= 2
+	cpu.pc -= 2
 }
 
-func delaySet(cpu *Cpu, x uint16) {
-	cpu.Dt = cpu.Registers[x]
+func delaySet(cpu *cpu, x uint16) {
+	cpu.dt = cpu.registers[x]
 }
 
-func soundSet(cpu *Cpu, x uint16) {
-	cpu.St = cpu.Registers[x]
+func soundSet(cpu *cpu, x uint16) {
+	cpu.st = cpu.registers[x]
 }
 
-func iAdd(cpu *Cpu, x uint16) {
-	cpu.I += uint16(cpu.Registers[x])
+func iAdd(cpu *cpu, x uint16) {
+	cpu.i += uint16(cpu.registers[x])
 }
 
-func iSetChar(cpu *Cpu, x uint16) {
-	cpu.I = uint16(cpu.Registers[x]) * CharSize
+func iSetChar(cpu *cpu, x uint16) {
+	cpu.i = uint16(cpu.registers[x]) * CharSize
 }
 
-func bcdStore(cpu *Cpu, x uint16, memory *Memory) {
-	result := cpu.Registers[x]
+func bcdStore(cpu *cpu, x uint16, memory *memory) {
+	result := cpu.registers[x]
 
 	for offset := 2; offset >= 0; offset-- {
-		memory.Ram[cpu.I+uint16(offset)] = result % 10
+		memory.ram[cpu.i+uint16(offset)] = result % 10
 		result /= 10
 	}
 }
 
-func registersStore(cpu *Cpu, x uint16, memory *Memory) {
+func registersStore(cpu *cpu, x uint16, memory *memory) {
 	for offset := uint16(0); offset <= x; offset++ {
-		memory.Ram[cpu.I+offset] = cpu.Registers[offset]
+		memory.ram[cpu.i+offset] = cpu.registers[offset]
 	}
 }
 
-func registersLoad(cpu *Cpu, x uint16, memory *Memory) {
+func registersLoad(cpu *cpu, x uint16, memory *memory) {
 	for offset := uint16(0); offset <= x; offset++ {
-		cpu.Registers[offset] = memory.Ram[cpu.I+offset]
+		cpu.registers[offset] = memory.ram[cpu.i+offset]
 	}
 }

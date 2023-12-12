@@ -1,6 +1,6 @@
 package chip8
 
-var fonts = []byte{
+var fonts = [256]byte{
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 	0x20, 0x60, 0x20, 0x20, 0x70, // 1
 	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -19,18 +19,18 @@ var fonts = []byte{
 	0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 }
 
-type Memory struct {
-	Ram    [4096]byte
-	Video  [2048]byte
-	Keypad [16]bool
+type memory struct {
+	ram    [4096]byte
+	video  [2048]byte
+	keypad [16]bool
 }
 
-func NewMemory() *Memory {
-	m := Memory{
-		Ram:   [4096]byte{},
-		Video: [2048]byte{},
+func newMemory() *memory {
+	m := memory{
+		ram:   [4096]byte{},
+		video: [2048]byte{},
 	}
 
-	copy(m.Ram[:len(fonts)], fonts)
+	copy(m.ram[:256], fonts[:])
 	return &m
 }
