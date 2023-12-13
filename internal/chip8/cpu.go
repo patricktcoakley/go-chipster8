@@ -18,7 +18,7 @@ func newCPU() *cpu {
 	}
 }
 
-func (c *cpu) SetVF(value byte) {
+func (c *cpu) setVF(value byte) {
 	c.registers[0xF] = value
 }
 

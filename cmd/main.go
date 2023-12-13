@@ -13,7 +13,7 @@ var (
 
 	widthFlag   = flag.Int("width", screenWidth, "Width of the screen")
 	romPathFlag = flag.String("romPath", "", "Which rom to run")
-	palleteFlag = flag.String("pallete", "black", "Pallete to use")
+	paletteFlag = flag.String("palette", "black", "Palette to use")
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Chipster8")
 
-	g := NewGame(*romPathFlag, *palleteFlag)
+	g := NewGame(*romPathFlag, *paletteFlag)
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)

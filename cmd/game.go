@@ -32,10 +32,10 @@ var (
 
 type Game struct {
 	chip8   *chip8.Chip8
-	pallete [2]color.Color
+	palette [2]color.Color
 }
 
-func NewGame(romPath string, pallete string) *Game {
+func NewGame(romPath string, palette string) *Game {
 	c := chip8.NewChip8()
 
 	f, err := os.ReadFile(romPath)
@@ -49,11 +49,11 @@ func NewGame(romPath string, pallete string) *Game {
 		chip8: c,
 	}
 
-	switch pallete {
+	switch palette {
 	case "black":
 		fallthrough
 	default:
-		g.pallete = [2]color.Color{
+		g.palette = [2]color.Color{
 			color.Black,
 			color.White,
 		}
@@ -105,9 +105,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for y := int32(0); y < chip8.VideoHeight; y++ {
 		for x := int32(0); x < chip8.VideoWidth; x++ {
 			if !g.chip8.HasColor(x, y) {
-				col = g.pallete[0]
+				col = g.palette[0]
 			} else {
-				col = g.pallete[1]
+				col = g.palette[1]
 			}
 			vector.DrawFilledRect(screen, float32(x*offset), float32(y*offset), float32(offset), float32(offset), col, true)
 		}

@@ -2,211 +2,211 @@ package chip8
 
 import "math/rand"
 
-func clearScreen(memory *memory) {
-	for i := range memory.video {
-		memory.video[i] = 0x0
+func clearScreen(m *memory) {
+	for i := range m.video {
+		m.video[i] = 0x0
 	}
 }
 
-func returnFromSubroutine(cpu *cpu) {
-	cpu.sp--
-	cpu.pc = cpu.stack[cpu.sp]
+func returnFromSubroutine(c *cpu) {
+	c.sp--
+	c.pc = c.stack[c.sp]
 }
 
-func jump(cpu *cpu, nnn uint16) {
-	cpu.pc = nnn
+func jump(c *cpu, nnn uint16) {
+	c.pc = nnn
 }
 
-func call(cpu *cpu, nnn uint16) {
-	cpu.stack[cpu.sp] = cpu.pc
-	cpu.sp++
-	cpu.pc = nnn
+func call(c *cpu, nnn uint16) {
+	c.stack[c.sp] = c.pc
+	c.sp++
+	c.pc = nnn
 }
 
-func skipEqual(cpu *cpu, x uint16, nn uint16) {
-	if cpu.registers[x] == byte(nn) {
-		cpu.sne()
+func skipEqual(c *cpu, x uint16, nn uint16) {
+	if c.registers[x] == byte(nn) {
+		c.sne()
 	}
 }
 
-func skipNotEqual(cpu *cpu, x uint16, nn uint16) {
-	if cpu.registers[x] != byte(nn) {
-		cpu.sne()
+func skipNotEqual(c *cpu, x uint16, nn uint16) {
+	if c.registers[x] != byte(nn) {
+		c.sne()
 	}
 }
 
-func registersSkipEqual(cpu *cpu, x uint16, y uint16) {
-	if cpu.registers[x] == cpu.registers[y] {
-		cpu.sne()
+func registersSkipEqual(c *cpu, x uint16, y uint16) {
+	if c.registers[x] == c.registers[y] {
+		c.sne()
 	}
 }
 
-func registerSet(cpu *cpu, x uint16, nn uint16) {
-	cpu.registers[x] = byte(nn)
+func registerSet(c *cpu, x uint16, nn uint16) {
+	c.registers[x] = byte(nn)
 }
 
-func registerAdd(cpu *cpu, x uint16, nn uint16) {
-	cpu.registers[x] += byte(nn)
+func registerAdd(c *cpu, x uint16, nn uint16) {
+	c.registers[x] += byte(nn)
 }
 
-func registersSet(cpu *cpu, x uint16, y uint16) {
-	cpu.registers[x] = cpu.registers[y]
+func registersSet(c *cpu, x uint16, y uint16) {
+	c.registers[x] = c.registers[y]
 }
 
-func registerOr(cpu *cpu, x uint16, y uint16) {
-	cpu.registers[x] |= cpu.registers[y]
+func registerOr(c *cpu, x uint16, y uint16) {
+	c.registers[x] |= c.registers[y]
 }
 
-func registerAnd(cpu *cpu, x uint16, y uint16) {
-	cpu.registers[x] &= cpu.registers[y]
+func registerAnd(c *cpu, x uint16, y uint16) {
+	c.registers[x] &= c.registers[y]
 }
 
-func registerXor(cpu *cpu, x uint16, y uint16) {
-	cpu.registers[x] ^= cpu.registers[y]
+func registerXor(c *cpu, x uint16, y uint16) {
+	c.registers[x] ^= c.registers[y]
 }
 
-func registersAdd(cpu *cpu, x uint16, y uint16) {
-	result := uint16(cpu.registers[x]) + uint16(cpu.registers[y])
-	cpu.registers[x] = byte(result)
+func registersAdd(c *cpu, x uint16, y uint16) {
+	result := uint16(c.registers[x]) + uint16(c.registers[y])
+	c.registers[x] = byte(result)
 	if result > 0xFF {
-		cpu.SetVF(1)
+		c.setVF(1)
 	} else {
-		cpu.SetVF(0)
+		c.setVF(0)
 	}
 }
 
-func registersSub(cpu *cpu, x uint16, y uint16) {
+func registersSub(c *cpu, x uint16, y uint16) {
 	var updatedVf byte
-	if cpu.registers[x] >= cpu.registers[y] {
+	if c.registers[x] >= c.registers[y] {
 		updatedVf = 1
 	} else {
 		updatedVf = 0
 	}
-	cpu.registers[x] -= cpu.registers[y]
-	cpu.SetVF(updatedVf)
+	c.registers[x] -= c.registers[y]
+	c.setVF(updatedVf)
 }
 
-func shiftRight(cpu *cpu, x uint16) {
-	updatedVf := cpu.registers[x] & 0x1
-	cpu.registers[x] >>= 1
-	cpu.SetVF(updatedVf)
+func shiftRight(c *cpu, x uint16) {
+	updatedVf := c.registers[x] & 0x1
+	c.registers[x] >>= 1
+	c.setVF(updatedVf)
 }
 
-func registersSubN(cpu *cpu, x uint16, y uint16) {
+func registersSubN(c *cpu, x uint16, y uint16) {
 	var updatedVf byte
-	if cpu.registers[x] <= cpu.registers[y] {
+	if c.registers[x] <= c.registers[y] {
 		updatedVf = 1
 	} else {
 		updatedVf = 0
 	}
-	cpu.registers[x] = cpu.registers[y] - cpu.registers[x]
-	cpu.SetVF(updatedVf)
+	c.registers[x] = c.registers[y] - c.registers[x]
+	c.setVF(updatedVf)
 }
 
-func shiftLeft(cpu *cpu, x uint16) {
-	updatedVf := (cpu.registers[x] & 0x80) >> 7
-	cpu.registers[x] <<= 1
-	cpu.SetVF(updatedVf)
+func shiftLeft(c *cpu, x uint16) {
+	updatedVf := (c.registers[x] & 0x80) >> 7
+	c.registers[x] <<= 1
+	c.setVF(updatedVf)
 }
 
-func registersSkipNotEqual(cpu *cpu, x uint16, y uint16) {
-	if cpu.registers[x] != cpu.registers[y] {
-		cpu.sne()
+func registersSkipNotEqual(c *cpu, x uint16, y uint16) {
+	if c.registers[x] != c.registers[y] {
+		c.sne()
 	}
 }
 
-func iSet(cpu *cpu, nnn uint16) {
-	cpu.i = nnn
+func iSet(c *cpu, nnn uint16) {
+	c.i = nnn
 }
 
-func jumpV0(cpu *cpu, nnn uint16) {
-	cpu.pc = nnn + uint16(cpu.registers[0])
+func jumpV0(c *cpu, nnn uint16) {
+	c.pc = nnn + uint16(c.registers[0])
 }
 
-func randomByte(cpu *cpu, x uint16, nn uint16) {
-	cpu.registers[x] = byte(rand.Int()%0xFF) & byte(nn)
+func randomByte(c *cpu, x uint16, nn uint16) {
+	c.registers[x] = byte(rand.Int()%0xFF) & byte(nn)
 }
 
-func draw(cpu *cpu, x uint16, y uint16, d uint16, memory *memory) {
+func draw(c *cpu, x uint16, y uint16, d uint16, m *memory) {
 	var collision byte
 	for displayY := uint16(0); displayY < d; displayY++ {
-		pixel := memory.ram[cpu.i+displayY]
+		pixel := m.ram[c.i+displayY]
 
 		for displayX := uint16(0); displayX < 8; displayX++ {
 			if pixel&(0x80>>displayX) != 0 {
-				xPos := (uint16(cpu.registers[x]) + displayX) % VideoWidth
-				yPos := (uint16(cpu.registers[y]) + displayY) % VideoHeight
+				xPos := (uint16(c.registers[x]) + displayX) % VideoWidth
+				yPos := (uint16(c.registers[y]) + displayY) % VideoHeight
 				pixelPos := yPos*VideoWidth + xPos
 
-				if memory.video[pixelPos] == 0x1 {
+				if m.video[pixelPos] == 0x1 {
 					collision = 1
 				}
-				memory.video[pixelPos] ^= 0x1
+				m.video[pixelPos] ^= 0x1
 			}
 		}
 	}
-	cpu.SetVF(collision)
+	c.setVF(collision)
 }
 
-func keySkip(cpu *cpu, x uint16, memory *memory) {
-	if memory.keypad[cpu.registers[x]] {
-		cpu.sne()
+func keySkip(c *cpu, x uint16, m *memory) {
+	if m.keypad[c.registers[x]] {
+		c.sne()
 	}
 }
 
-func keySkipNot(cpu *cpu, x uint16, memory *memory) {
-	if !memory.keypad[cpu.registers[x]] {
-		cpu.sne()
+func keySkipNot(c *cpu, x uint16, m *memory) {
+	if !m.keypad[c.registers[x]] {
+		c.sne()
 	}
 }
 
-func registerSetDelay(cpu *cpu, x uint16) {
-	cpu.registers[x] = cpu.dt
+func registerSetDelay(c *cpu, x uint16) {
+	c.registers[x] = c.dt
 }
 
-func keySet(cpu *cpu, memory *memory, x uint16) {
-	for i, pressed := range memory.keypad {
+func keySet(c *cpu, m *memory, x uint16) {
+	for i, pressed := range m.keypad {
 		if pressed {
-			cpu.registers[x] = byte(i)
+			c.registers[x] = byte(i)
 			return
 		}
 	}
-	cpu.pc -= 2
+	c.pc -= 2
 }
 
-func delaySet(cpu *cpu, x uint16) {
-	cpu.dt = cpu.registers[x]
+func delaySet(c *cpu, x uint16) {
+	c.dt = c.registers[x]
 }
 
-func soundSet(cpu *cpu, x uint16) {
-	cpu.st = cpu.registers[x]
+func soundSet(c *cpu, x uint16) {
+	c.st = c.registers[x]
 }
 
-func iAdd(cpu *cpu, x uint16) {
-	cpu.i += uint16(cpu.registers[x])
+func iAdd(c *cpu, x uint16) {
+	c.i += uint16(c.registers[x])
 }
 
-func iSetChar(cpu *cpu, x uint16) {
-	cpu.i = uint16(cpu.registers[x]) * CharSize
+func iSetChar(c *cpu, x uint16) {
+	c.i = uint16(c.registers[x]) * CharSize
 }
 
-func bcdStore(cpu *cpu, x uint16, memory *memory) {
-	result := cpu.registers[x]
+func bcdStore(c *cpu, x uint16, m *memory) {
+	result := c.registers[x]
 
 	for offset := 2; offset >= 0; offset-- {
-		memory.ram[cpu.i+uint16(offset)] = result % 10
+		m.ram[c.i+uint16(offset)] = result % 10
 		result /= 10
 	}
 }
 
-func registersStore(cpu *cpu, x uint16, memory *memory) {
+func registersStore(c *cpu, x uint16, m *memory) {
 	for offset := uint16(0); offset <= x; offset++ {
-		memory.ram[cpu.i+offset] = cpu.registers[offset]
+		m.ram[c.i+offset] = c.registers[offset]
 	}
 }
 
-func registersLoad(cpu *cpu, x uint16, memory *memory) {
+func registersLoad(c *cpu, x uint16, m *memory) {
 	for offset := uint16(0); offset <= x; offset++ {
-		cpu.registers[offset] = memory.ram[cpu.i+offset]
+		c.registers[offset] = m.ram[c.i+offset]
 	}
 }
