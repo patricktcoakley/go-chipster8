@@ -27,15 +27,19 @@ var (
 		ebiten.KeyS,
 		ebiten.KeyD,
 		ebiten.KeyF,
+		ebiten.KeyZ,
+		ebiten.KeyX,
+		ebiten.KeyC,
+		ebiten.KeyV,
 	}
 )
 
 type Game struct {
 	chip8   *chip8.Chip8
-	palette [2]color.Color
+	palette palette
 }
 
-func NewGame(romPath string, palette string) *Game {
+func NewGame(romPath string, paletteName string) *Game {
 	c := chip8.NewChip8()
 
 	f, err := os.ReadFile(romPath)
@@ -46,17 +50,8 @@ func NewGame(romPath string, palette string) *Game {
 	c.LoadRom(f)
 
 	g := Game{
-		chip8: c,
-	}
-
-	switch palette {
-	case "black":
-		fallthrough
-	default:
-		g.palette = [2]color.Color{
-			color.Black,
-			color.White,
-		}
+		chip8:   c,
+		palette: loadPalette(paletteName),
 	}
 
 	return &g
@@ -68,6 +63,11 @@ func (g *Game) Update() error {
 			os.Exit(0)
 		}
 
+		if inpututil.IsKeyJustPressed(ebiten.KeyF1) {
+			g.chip8.Reset()
+			return
+		}
+
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			if g.chip8.State == chip8.Running {
 				g.chip8.State = chip8.Paused
@@ -77,7 +77,7 @@ func (g *Game) Update() error {
 		}
 	}()
 
-	if g.chip8.State == chip8.Paused {
+	if g.chip8.State != chip8.Running {
 		return nil
 	}
 
@@ -104,12 +104,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var col color.Color
 	for y := int32(0); y < chip8.VideoHeight; y++ {
 		for x := int32(0); x < chip8.VideoWidth; x++ {
-			if !g.chip8.HasColor(x, y) {
-				col = g.palette[0]
+			if g.chip8.HasColor(x, y) {
+				col = g.palette.foreground
 			} else {
-				col = g.palette[1]
+				col = g.palette.background
 			}
-			vector.DrawFilledRect(screen, float32(x*offset), float32(y*offset), float32(offset), float32(offset), col, true)
+			vector.DrawFilledRect(screen, float32(x*offset), float32(y*offset), float32(offset), float32(offset), col, false)
 		}
 	}
 

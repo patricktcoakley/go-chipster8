@@ -12,6 +12,7 @@ type Chip8 struct {
 	State           State
 	memory          *memory
 	cpu             *cpu
+	programSize     uint16
 }
 
 func NewChip8() *Chip8 {
@@ -23,10 +24,20 @@ func NewChip8() *Chip8 {
 }
 
 func (c *Chip8) LoadRom(rom []byte) {
+	c.programSize = uint16(len(rom))
 	copy(c.memory.ram[ProgramStartAddress:], rom)
 }
 
 func (c *Chip8) Step() {
+	if c.State != Running {
+		return
+	}
+
+	if c.cpu.pc >= ProgramStartAddress+c.programSize {
+		c.State = Finished
+		return
+	}
+
 	opcode := c.opcode()
 	c.cpu.sne()
 	c.cpu.execute(opcode, c.memory)
@@ -55,6 +66,13 @@ func (c *Chip8) ClearKeypad() {
 	for i := 0; i < 16; i++ {
 		c.memory.keypad[i] = false
 	}
+}
+
+func (c *Chip8) Reset() {
+	c.cpu = newCPU()
+	c.cpu.execute(0x00E0, c.memory)
+	c.cpu.pc = ProgramStartAddress
+	c.State = Running
 }
 
 func (c *Chip8) opcode() uint16 {

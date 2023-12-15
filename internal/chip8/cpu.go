@@ -26,6 +26,7 @@ func (c *cpu) execute(opcode uint16, memory *memory) {
 	x := (opcode & 0x0F00) >> 8
 	y := (opcode & 0x00F0) >> 4
 	d := opcode & 0x000F
+
 	nn := opcode & 0x00FF
 	nnn := opcode & 0x0FFF
 
