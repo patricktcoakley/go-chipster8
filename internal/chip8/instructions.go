@@ -141,10 +141,12 @@ func draw(c *cpu, x uint16, y uint16, d uint16, m *memory) {
 				if m.video[pixelPos] == 0x1 {
 					collision = 1
 				}
+
 				m.video[pixelPos] ^= 0x1
 			}
 		}
 	}
+
 	c.setVF(collision)
 }
 

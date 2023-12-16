@@ -2,34 +2,29 @@ package main
 
 import (
 	"flag"
-	"go-chipster8/internal/chip8"
+	"go-chipster8/chipster8"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var (
-	scale        = 25
-	screenWidth  = chip8.VideoWidth
-	screenHeight = chip8.VideoHeight
+	scale = 25
 
-	scaleFlag   = flag.Int("scale", scale, "Scale factor for the screen. Default is 25.")
-	romPathFlag = flag.String("romPath", "", "Which rom to run.")
-	paletteFlag = flag.String("palette", "black", "Palette to use.")
+	scaleFlag     = flag.Int("scale", scale, "Scale factor for the screen. Default is 25.")
+	romPathFlag   = flag.String("romPath", "./roms", "Accepts either a folder path or a rom path. Default is `./roms`.")
+	paletteFlag   = flag.String("palette", "black", "Palette to use. Default is `black`.")
+	stepSpeedFlag = flag.Int("stepSpeed", 10, "Number of instructions to execute per frame. Default is 10.")
 )
 
 func main() {
 	flag.Parse()
 
-	screenWidth *= *scaleFlag
-	screenHeight *= *scaleFlag
+	if *stepSpeedFlag < 1 {
+		log.Fatal("stepSpeed must be greater than 0")
+	}
 
-	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Chipster8")
-	ebiten.SetVsyncEnabled(true)
-
-	g := NewGame(*romPathFlag, *paletteFlag)
+	g := chipster8.NewGame(*romPathFlag, *paletteFlag, *stepSpeedFlag, *scaleFlag)
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
