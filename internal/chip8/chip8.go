@@ -1,5 +1,7 @@
 package chip8
 
+import "fmt"
+
 const (
 	ProgramStartAddress = 0x200
 	VideoHeight         = 0x20
@@ -23,9 +25,13 @@ func NewChip8() *Chip8 {
 	}
 }
 
-func (c *Chip8) LoadRom(rom []byte) {
+func (c *Chip8) LoadRom(rom []byte) error {
+	if len(rom) > len(c.memory.ram[ProgramStartAddress:]) {
+		return fmt.Errorf("ROM is larger than the Chip8 memory")
+	}
 	c.programSize = uint16(len(rom))
 	copy(c.memory.ram[ProgramStartAddress:], rom)
+	return nil
 }
 
 func (c *Chip8) Step(speed int) {
@@ -71,9 +77,8 @@ func (c *Chip8) ClearKeypad() {
 }
 
 func (c *Chip8) Reset() {
+	clearScreen(c.memory)
 	c.cpu = newCPU()
-	c.cpu.execute(0x00E0, c.memory)
-	c.cpu.pc = ProgramStartAddress
 	c.State = Running
 }
 

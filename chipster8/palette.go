@@ -10,7 +10,7 @@ const (
 
 var SelectedPalette = paletteBlack
 
-func getPaletteNames() []string {
+func GetPaletteNames() []string {
 	return []string{
 		"black",
 		"green",
@@ -24,7 +24,7 @@ type Palette struct {
 }
 
 func LoadPalette(name string) Palette {
-	for i, n := range getPaletteNames() {
+	for i, n := range GetPaletteNames() {
 		if n == name {
 			SelectedPalette = i
 			break
@@ -35,7 +35,7 @@ func LoadPalette(name string) Palette {
 
 func CyclePalette() Palette {
 	SelectedPalette++
-	if SelectedPalette > len(getPaletteNames())-1 {
+	if SelectedPalette > len(GetPaletteNames())-1 {
 		SelectedPalette = 0
 	}
 
@@ -43,7 +43,7 @@ func CyclePalette() Palette {
 }
 
 func updatePalette() Palette {
-	name := getPaletteNames()[SelectedPalette]
+	name := GetPaletteNames()[SelectedPalette]
 	switch name {
 	case "green":
 		return Palette{

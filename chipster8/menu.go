@@ -3,9 +3,10 @@ package chipster8
 import (
 	"fmt"
 	"go-chipster8/internal/chip8"
-	"golang.org/x/image/font"
 	"log"
 	"os"
+
+	"golang.org/x/image/font"
 )
 
 var (
@@ -39,7 +40,10 @@ func menuLoad(title string, folderPath string, c *chip8.Chip8) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	c.Reset()
-	c.LoadRom(f)
+	if err = c.LoadRom(f); err != nil {
+		log.Fatal(err)
+	}
 	c.State = chip8.Running
 }

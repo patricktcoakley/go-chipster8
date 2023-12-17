@@ -1,14 +1,15 @@
 package chipster8
 
 import (
-	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
-	"github.com/hajimehoshi/ebiten/v2/text"
 	"go-chipster8/internal/chip8"
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/opentype"
 	"image/color"
 	"log"
 	"os"
+
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
+	"github.com/hajimehoshi/ebiten/v2/text"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -78,7 +79,10 @@ func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *
 			log.Fatal(err)
 		}
 
-		c.LoadRom(f)
+		if err = c.LoadRom(f); err != nil {
+			log.Fatal(err)
+		}
+
 		c.State = chip8.Running
 	}
 
