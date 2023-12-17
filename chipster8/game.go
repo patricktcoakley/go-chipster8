@@ -1,19 +1,18 @@
 package chipster8
 
 import (
+	"go-chipster8/chipster8/fonts"
 	"go-chipster8/internal/chip8"
 	"image/color"
 	"log"
 	"os"
 
-	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
-	"github.com/hajimehoshi/ebiten/v2/text"
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/opentype"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 )
 
 var (
@@ -38,6 +37,9 @@ var (
 
 	screenWidth  = chip8.VideoWidth
 	screenHeight = chip8.VideoHeight
+	menuFont     font.Face
+	pauseFont    font.Face
+	menuColor    = color.RGBA{R: 0xFF, G: 0x0F, B: 0xDD, A: 0xFF} // pink
 )
 
 type Game struct {
@@ -86,14 +88,24 @@ func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *
 		c.State = chip8.Running
 	}
 
-	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
+	ttf, err := opentype.Parse(fonts.FiraCode)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	menuFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
+	menuFont, err = opentype.NewFace(ttf, &opentype.FaceOptions{
+		Size:    8,
+		DPI:     300,
+		Hinting: font.HintingFull,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pauseFont, err = opentype.NewFace(ttf, &opentype.FaceOptions{
 		Size:    24,
-		DPI:     72,
+		DPI:     300,
 		Hinting: font.HintingFull,
 	})
 
@@ -204,19 +216,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(g.palette.Background)
 	if g.chip8.State == chip8.Off {
 		var col color.Color
-		for i, title := range romTitles {
+		for i, title := range romTitles[SelectedPalette:] {
 			if i == menuCursor {
-				col = color.RGBA{R: 0xFF, G: 0xF, B: 0xDD, A: 0xFF}
+				col = menuColor
 			} else {
 				col = g.palette.Foreground
 			}
-			text.Draw(screen, title, menuFont, 20, 20*(i+1), col)
+			text.Draw(screen, title, menuFont, screenWidth/50, 30*(i+1), col)
 		}
 		return
 	}
 
 	if g.chip8.State == chip8.Paused {
-		text.Draw(screen, "PAUSED", menuFont, screenWidth/2-30, screenHeight/2, color.White)
+		text.Draw(screen, "PAUSED", pauseFont, screenWidth/2-150, screenHeight/2, color.White)
 		return
 	}
 

@@ -5,14 +5,11 @@ import (
 	"go-chipster8/internal/chip8"
 	"log"
 	"os"
-
-	"golang.org/x/image/font"
 )
 
 var (
 	rootRomPath string
 	romTitles   []string
-	menuFont    font.Face
 	menuCursor  int
 )
 
