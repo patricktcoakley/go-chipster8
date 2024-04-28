@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"go-chipster8/chipster8"
+	"go-chipster8/internal/game"
 	"log"
 	"slices"
 	"strings"
@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	scaleFlag     = flag.Int("scale", 25, "Scale factor for the screen. Default is 25.")
-	romPathFlag   = flag.String("romPath", "./roms", "Accepts either a folder path or a rom path. Default is `./roms`.")
-	paletteFlag   = flag.String("palette", "black", "Palette to use. Default is `black`.")
-	stepSpeedFlag = flag.Int("stepSpeed", 10, "Number of instructions to execute per frame. Default is 10.")
+	scaleFlag     = flag.Int("scale", 25, "Scale factor for the screen.")
+	romPathFlag   = flag.String("romPath", "./roms", "Accepts either a folder or file path.")
+	paletteFlag   = flag.String("palette", "black", "Palette to use. Choices are 'black', 'blue', or 'green'.")
+	stepSpeedFlag = flag.Int("stepSpeed", 10, "Number of instructions to execute per frame. Change this to speed up or slow down gameplay.")
 )
 
 func main() {
@@ -33,11 +33,11 @@ func main() {
 		log.Fatal("romPath can't be empty")
 	}
 
-	if !slices.Contains(chipster8.GetPaletteNames(), *paletteFlag) {
-		log.Fatalf("palette must be one of the following: %s", strings.Join(chipster8.GetPaletteNames(), ", "))
+	if !slices.Contains(game.GetPaletteNames(), *paletteFlag) {
+		log.Fatalf("palette must be one of the following: %s", strings.Join(game.GetPaletteNames(), ", "))
 	}
 
-	g := chipster8.NewGame(*romPathFlag, *paletteFlag, *stepSpeedFlag, *scaleFlag)
+	g := game.NewGame(*romPathFlag, *paletteFlag, *stepSpeedFlag, *scaleFlag)
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)

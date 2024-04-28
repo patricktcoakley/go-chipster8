@@ -1,4 +1,4 @@
-package chipster8
+package game
 
 import "image/color"
 

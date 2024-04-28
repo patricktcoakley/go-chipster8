@@ -26,10 +26,7 @@ type memory struct {
 }
 
 func newMemory() *memory {
-	m := memory{
-		ram:   [4096]byte{},
-		video: [2048]byte{},
-	}
+	var m memory
 
 	copy(m.ram[:256], fonts[:])
 	return &m

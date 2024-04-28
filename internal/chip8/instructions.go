@@ -1,6 +1,6 @@
 package chip8
 
-import "math/rand"
+import "math/rand/v2"
 
 func clearScreen(m *memory) {
 	for i := range m.video {

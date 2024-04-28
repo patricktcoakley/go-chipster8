@@ -1,6 +1,8 @@
 package chip8
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const (
 	ProgramStartAddress = 0x200
@@ -34,31 +36,28 @@ func (c *Chip8) LoadRom(rom []byte) error {
 	return nil
 }
 
-func (c *Chip8) Step(speed int) {
-	for i := 0; i < speed; i++ {
-		if c.State != Running {
-			return
-		}
+func (c *Chip8) Step() {
+	if c.State != Running {
+		return
+	}
 
-		if c.cpu.pc >= ProgramStartAddress+c.programSize {
-			c.State = Finished
-			return
-		}
+	if c.cpu.pc >= ProgramStartAddress+c.programSize {
+		c.State = Finished
+		return
+	}
 
-		opcode := c.opcode()
-		c.cpu.sne()
-		c.cpu.execute(opcode, c.memory)
+	opcode := c.opcode()
+	c.cpu.sne()
+	c.cpu.execute(opcode, c.memory)
 
-		if c.cpu.dt > 0 {
-			c.cpu.dt--
-		}
+	if c.cpu.dt > 0 {
+		c.cpu.dt--
+	}
 
-		if c.cpu.st > 0 {
-			c.cpu.st--
-			c.ShouldPlaySound = true
-		} else {
-			c.ShouldPlaySound = false
-		}
+	c.ShouldPlaySound = c.cpu.st > 0
+
+	if c.cpu.st > 0 {
+		c.cpu.st--
 	}
 }
 

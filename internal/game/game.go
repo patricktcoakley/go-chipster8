@@ -1,7 +1,11 @@
-package chipster8
+package game
 
 import (
-	"go-chipster8/chipster8/fonts"
+	"bytes"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/wav"
+	"go-chipster8/assets/fonts"
+	"go-chipster8/assets/sounds"
 	"go-chipster8/internal/chip8"
 	"image/color"
 	"log"
@@ -46,6 +50,7 @@ type Game struct {
 	chip8     *chip8.Chip8
 	palette   Palette
 	stepSpeed int
+	player    *audio.Player
 }
 
 func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *Game {
@@ -55,7 +60,6 @@ func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Chipster8")
-	ebiten.SetVsyncEnabled(true)
 
 	c := chip8.NewChip8()
 
@@ -113,10 +117,23 @@ func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *
 		log.Fatal(err)
 	}
 
+	beep, err := wav.DecodeWithSampleRate(48000, bytes.NewReader(sounds.BeepWAV))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	audioContext := audio.NewContext(48000)
+
+	player, err := audioContext.NewPlayer(beep)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	g := Game{
 		chip8:     c,
 		palette:   LoadPalette(paletteName),
 		stepSpeed: stepSpeed,
+		player:    player,
 	}
 
 	return &g
@@ -176,8 +193,8 @@ func (g *Game) Update() error {
 
 			if inpututil.IsKeyJustPressed(ebiten.KeyF3) {
 				g.stepSpeed++
-				if g.stepSpeed > 20 {
-					g.stepSpeed = 20
+				if g.stepSpeed > 15 {
+					g.stepSpeed = 15
 				}
 			}
 
@@ -189,7 +206,6 @@ func (g *Game) Update() error {
 				}
 			}
 		}
-
 	}()
 
 	if g.chip8.State == chip8.Off || g.chip8.State == chip8.Paused {
@@ -205,7 +221,13 @@ func (g *Game) Update() error {
 		g.chip8.SetKeypad(i, keyDown(key))
 	}
 
-	g.chip8.Step(g.stepSpeed)
+	for range g.stepSpeed {
+		if g.chip8.ShouldPlaySound {
+			g.playBeep()
+		}
+
+		g.chip8.Step()
+	}
 
 	g.chip8.ClearKeypad()
 
@@ -252,6 +274,11 @@ func (g *Game) Layout(_, _ int) (int, int) {
 
 func (g *Game) cyclePalette() {
 	g.palette = CyclePalette()
+}
+
+func (g *Game) playBeep() {
+	g.player.Rewind()
+	g.player.Play()
 }
 
 func keyDown(key ebiten.Key) bool {
