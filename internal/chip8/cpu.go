@@ -14,7 +14,7 @@ type cpu struct {
 
 func newCPU() *cpu {
 	return &cpu{
-		pc: ProgramStartAddress,
+		pc: programStartAddress,
 	}
 }
 

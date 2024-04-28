@@ -189,7 +189,7 @@ func iAdd(c *cpu, x uint16) {
 }
 
 func iSetChar(c *cpu, x uint16) {
-	c.i = uint16(c.registers[x]) * CharSize
+	c.i = uint16(c.registers[x]) * charSize
 }
 
 func bcdStore(c *cpu, x uint16, m *memory) {

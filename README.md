@@ -3,6 +3,10 @@
 Just a quick port of [Chipster8](https://github.com/patricktcoakley/Chipster8) to Go
 using [Ebitengine](https://ebitengine.org/).
 
+![Pong](screenshots/screenshot1.png)
+![Menu](screenshots/screenshot2.png)
+![Invaders](screenshots/screenshot3.png)
+
 ## Usage
 
 go-chipster8 takes the following arguments:

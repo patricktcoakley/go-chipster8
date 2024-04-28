@@ -1,9 +1,9 @@
 package chip8
 
-type State uint8
+type state uint8
 
 const (
-	Running State = iota
+	Running state = iota
 	Paused
 	Finished
 	Off

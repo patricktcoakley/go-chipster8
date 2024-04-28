@@ -1,6 +1,9 @@
 package game
 
-import "image/color"
+import (
+	"image/color"
+	"slices"
+)
 
 const (
 	paletteBlack = iota
@@ -24,20 +27,16 @@ type palette struct {
 }
 
 func loadPalette(name string) palette {
-	for i, n := range GetPaletteNames() {
-		if n == name {
-			selectedPalette = i
-			break
-		}
+	selectedPalette = slices.Index(GetPaletteNames(), name)
+	if selectedPalette < 0 || selectedPalette > len(GetPaletteNames()) {
+		selectedPalette = 0
 	}
 	return updatePalette()
 }
 
 func cyclePalette() palette {
 	selectedPalette++
-	if selectedPalette > len(GetPaletteNames())-1 {
-		selectedPalette = 0
-	}
+	selectedPalette %= len(GetPaletteNames())
 
 	return updatePalette()
 }

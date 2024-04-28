@@ -236,7 +236,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(g.palette.Background)
 	if g.chip8.State == chip8.Off {
 		var col color.Color
-		for i, title := range romTitles[selectedPalette:] {
+		for i, title := range romTitles {
 			if i == menuCursor {
 				col = menuColor
 			} else {

@@ -5,15 +5,15 @@ import (
 )
 
 const (
-	ProgramStartAddress = 0x200
 	VideoHeight         = 0x20
 	VideoWidth          = 0x40
-	CharSize            = 0x5
+	charSize            = 0x5
+	programStartAddress = 0x200
 )
 
 type Chip8 struct {
 	ShouldPlaySound bool
-	State           State
+	State           state
 	memory          *memory
 	cpu             *cpu
 	programSize     uint16
@@ -28,11 +28,11 @@ func NewChip8() *Chip8 {
 }
 
 func (c *Chip8) LoadRom(rom []byte) error {
-	if len(rom) > len(c.memory.ram[ProgramStartAddress:]) {
+	if len(rom) > len(c.memory.ram[programStartAddress:]) {
 		return fmt.Errorf("ROM is larger than the Chip8 memory")
 	}
 	c.programSize = uint16(len(rom))
-	copy(c.memory.ram[ProgramStartAddress:], rom)
+	copy(c.memory.ram[programStartAddress:], rom)
 	return nil
 }
 
@@ -41,7 +41,7 @@ func (c *Chip8) Step() {
 		return
 	}
 
-	if c.cpu.pc >= ProgramStartAddress+c.programSize {
+	if c.cpu.pc >= programStartAddress+c.programSize {
 		c.State = Finished
 		return
 	}
