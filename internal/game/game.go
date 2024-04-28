@@ -48,7 +48,7 @@ var (
 
 type Game struct {
 	chip8     *chip8.Chip8
-	palette   Palette
+	palette   palette
 	stepSpeed int
 	player    *audio.Player
 }
@@ -131,7 +131,7 @@ func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *
 
 	g := Game{
 		chip8:     c,
-		palette:   LoadPalette(paletteName),
+		palette:   loadPalette(paletteName),
 		stepSpeed: stepSpeed,
 		player:    player,
 	}
@@ -140,73 +140,71 @@ func NewGame(romPath string, paletteName string, stepSpeed int, scaleFlag int) *
 }
 
 func (g *Game) Update() error {
-	go func() {
-		if inpututil.IsKeyJustPressed(ebiten.KeyF6) {
-			g.cyclePalette()
+	if inpututil.IsKeyJustPressed(ebiten.KeyF6) {
+		g.cyclePalette()
+	}
+
+	if g.chip8.State == chip8.Off {
+		if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+			menuScroll(1)
 		}
 
-		if g.chip8.State == chip8.Off {
-			if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-				menuScroll(1)
-			}
+		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+			menuScroll(-1)
+		}
 
-			if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-				menuScroll(-1)
-			}
+		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+			menuScroll(10)
+		}
 
-			if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-				menuScroll(10)
-			}
+		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+			menuScroll(-10)
+		}
 
-			if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-				menuScroll(-10)
-			}
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			menuLoad(romTitles[menuCursor], rootRomPath, g.chip8)
+		}
 
-			if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-				menuLoad(romTitles[menuCursor], rootRomPath, g.chip8)
-			}
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+			os.Exit(0)
+		}
 
-			if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	} else {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+			if len(romTitles) == 0 {
 				os.Exit(0)
 			}
+			g.chip8.State = chip8.Off
+			return nil
+		}
 
-		} else {
-			if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-				if len(romTitles) == 0 {
-					os.Exit(0)
-				}
-				g.chip8.State = chip8.Off
-				return
-			}
+		if inpututil.IsKeyJustPressed(ebiten.KeyF1) {
+			g.chip8.Reset()
+			return nil
+		}
 
-			if inpututil.IsKeyJustPressed(ebiten.KeyF1) {
-				g.chip8.Reset()
-				return
-			}
-
-			if inpututil.IsKeyJustPressed(ebiten.KeyF2) {
-				g.stepSpeed--
-				if g.stepSpeed < 1 {
-					g.stepSpeed = 1
-				}
-			}
-
-			if inpututil.IsKeyJustPressed(ebiten.KeyF3) {
-				g.stepSpeed++
-				if g.stepSpeed > 15 {
-					g.stepSpeed = 15
-				}
-			}
-
-			if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-				if g.chip8.State == chip8.Running {
-					g.chip8.State = chip8.Paused
-				} else {
-					g.chip8.State = chip8.Running
-				}
+		if inpututil.IsKeyJustPressed(ebiten.KeyF2) {
+			g.stepSpeed--
+			if g.stepSpeed < 1 {
+				g.stepSpeed = 1
 			}
 		}
-	}()
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyF3) {
+			g.stepSpeed++
+			if g.stepSpeed > 15 {
+				g.stepSpeed = 15
+			}
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			if g.chip8.State == chip8.Running {
+				g.chip8.State = chip8.Paused
+			} else {
+				g.chip8.State = chip8.Running
+			}
+		}
+	}
 
 	if g.chip8.State == chip8.Off || g.chip8.State == chip8.Paused {
 		return nil
@@ -238,7 +236,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(g.palette.Background)
 	if g.chip8.State == chip8.Off {
 		var col color.Color
-		for i, title := range romTitles[SelectedPalette:] {
+		for i, title := range romTitles[selectedPalette:] {
 			if i == menuCursor {
 				col = menuColor
 			} else {
@@ -273,7 +271,7 @@ func (g *Game) Layout(_, _ int) (int, int) {
 }
 
 func (g *Game) cyclePalette() {
-	g.palette = CyclePalette()
+	g.palette = cyclePalette()
 }
 
 func (g *Game) playBeep() {

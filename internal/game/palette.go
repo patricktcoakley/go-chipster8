@@ -8,7 +8,7 @@ const (
 	paletteBlue
 )
 
-var SelectedPalette = paletteBlack
+var selectedPalette = paletteBlack
 
 func GetPaletteNames() []string {
 	return []string{
@@ -18,47 +18,47 @@ func GetPaletteNames() []string {
 	}
 }
 
-type Palette struct {
+type palette struct {
 	Foreground color.Color
 	Background color.Color
 }
 
-func LoadPalette(name string) Palette {
+func loadPalette(name string) palette {
 	for i, n := range GetPaletteNames() {
 		if n == name {
-			SelectedPalette = i
+			selectedPalette = i
 			break
 		}
 	}
 	return updatePalette()
 }
 
-func CyclePalette() Palette {
-	SelectedPalette++
-	if SelectedPalette > len(GetPaletteNames())-1 {
-		SelectedPalette = 0
+func cyclePalette() palette {
+	selectedPalette++
+	if selectedPalette > len(GetPaletteNames())-1 {
+		selectedPalette = 0
 	}
 
 	return updatePalette()
 }
 
-func updatePalette() Palette {
-	name := GetPaletteNames()[SelectedPalette]
+func updatePalette() palette {
+	name := GetPaletteNames()[selectedPalette]
 	switch name {
 	case "green":
-		return Palette{
+		return palette{
 			color.RGBA{G: 0x77, A: 0xFF},
 			color.White,
 		}
 	case "blue":
-		return Palette{
+		return palette{
 			color.RGBA{B: 0x77, A: 0xFF},
 			color.RGBA{R: 0xD0, G: 0xD0, B: 0xD0, A: 0xFF},
 		}
 	case "black":
 		fallthrough
 	default:
-		return Palette{
+		return palette{
 			color.White,
 			color.Black,
 		}
